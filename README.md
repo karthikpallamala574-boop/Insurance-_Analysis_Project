@@ -17,3 +17,4 @@ KPI List
 5. No of meeting By Account Exe
 6-Top Open Opportunity
 
+![image alt](https://github.com/karthikpallamala574-boop/Insurance-_Analysis_Project/blob/main/INSURENCE%20ANALYSIS%20DASHBOARD.png?raw=true)
