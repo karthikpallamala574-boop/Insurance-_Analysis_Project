@@ -11,8 +11,6 @@ A branch-level performance dashboard for an insurance brokerage. It compares eac
 
 The data was loaded into MySQL, the KPIs were calculated in SQL, and the dashboards were built in Excel and Tableau. SQL totals were checked against the Excel dashboard.
 
-> **Note:** The data looks like sample data (client names such as A, B, C). The results describe what the dashboard shows, not real business outcomes.
-
 ---
 
 ## Business question
@@ -25,7 +23,7 @@ The dashboard is meant for a conversation between a corporate team and individua
 
 **Excel dashboard.** Target, placed and invoiced revenue for each business type, achievement percentages, meetings and invoices per account executive, a stage funnel, product-group split and top opportunities, with slicers by employee and meeting year.
 
-![Excel dashboard]()
+![Excel dashboard](https://github.com/karthikpallamala574-boop/Insurance-_Analysis_Project/blob/eb96dfddb91fd013c76a4c0da9c2b73bbedbdee4/Dashboard.png)
 
 **Achievement summary sheet.** The pivot tables behind the placed and invoiced figures, with budget totals and achievement percentages.
 
