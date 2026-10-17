@@ -27,7 +27,7 @@ The dashboard is meant for a conversation between a corporate team and individua
 
 **Achievement summary sheet.** The pivot tables behind the placed and invoiced figures, with budget totals and achievement percentages.
 
-![Achievement summary](images/excel_achievement_summary.png)
+![Achievement summary](https://github.com/karthikpallamala574-boop/Insurance-_Analysis_Project/blob/a0753a39e9d6f75d8fa3750e81d4c605df401afa/excel_achievement_summary.png)
 
 ## Data
 
