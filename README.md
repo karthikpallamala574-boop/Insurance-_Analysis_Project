@@ -5,157 +5,130 @@
 
 - 📫 How to reach me **Karthikpallamala574@gmail.com**
 
-# Insurance Sales & Opportunity Analysis
+# Insurance Sales Performance Analytics Dashboard
 
-## 1. Project Overview
+A branch-level performance dashboard for an insurance brokerage. It compares each salesperson's **target**, **placed** revenue and **invoiced** revenue for new, cross-sell and renewal business, and adds a sales-pipeline and meeting-activity view.
 
-An insurance sales analytics project designed to analyze
-sales activity, target achievement, invoices, meetings,
-and opportunity pipeline performance.
+The data was loaded into MySQL, the KPIs were calculated in SQL, and the dashboards were built in Excel and Tableau. SQL totals were checked against the Excel dashboard.
 
----
-
-## 2. Business Problem
-
-Insurance sales teams need visibility into:
-
-- Target vs achievement
-- Invoice performance
-- Meeting activity
-- New business
-- Renewal business
-- Cross-Sell business
-- Open opportunities
-- Revenue by opportunity stage
-
-The objective was to organize these metrics into
-an analytical dashboard for easier monitoring.
+> **Note:** The data looks like sample data (client names such as A, B, C). The results describe what the dashboard shows, not real business outcomes.
 
 ---
 
-## 3. Business Users
+## Business question
 
-- Sales Managers
-- Account Executives
-- Sales / Business Development Teams
+How is each account executive performing against target on new, cross-sell and renewal business, and what does the open pipeline look like?
 
----
+The dashboard is meant for a conversation between a corporate team and individual branch heads.
 
-## 4. Objectives
+## Dashboard
 
-- Analyze sales performance
-- Monitor target and achievement
-- Compare New, Renewal and Cross-Sell business
-- Analyze Account Executive activity
-- Understand opportunity pipeline
-- Identify high-value open opportunities
+**Excel dashboard.** Target, placed and invoiced revenue for each business type, achievement percentages, meetings and invoices per account executive, a stage funnel, product-group split and top opportunities, with slicers by employee and meeting year.
 
----
+![Excel dashboard]()
 
-## 5. Dataset
+**Achievement summary sheet.** The pivot tables behind the placed and invoiced figures, with budget totals and achievement percentages.
 
-The dataset contains information related to:
+![Achievement summary](images/excel_achievement_summary.png)
 
-- Invoice dates
-- Meeting dates
-- Account Executives
-- Business type
-- Opportunity
-- Opportunity stage
-- Revenue
-- Target
-- Achievement
-- Product group
+## Data
 
----
+Six Excel files, one branch (Ahmedabad):
 
-## 6. Tools & Technologies
+| File | Contents | Rows |
+|---|---|---|
+| `brokerage.xlsx` | Policy-level brokerage income | 961 |
+| `fees.xlsx` | Fee income | 9 |
+| `invoice.xlsx` | Invoices raised | 204 |
+| `Opportunity.xlsx` | Sales opportunities and stages | 49 |
+| `meeting.xlsx` | Meetings by account executive | 34 |
+| `Individual Budgets.xlsx` | New, cross-sell and renewal targets per person | 10 |
 
-- SQL
-- Excel
-- Tableau
+Column descriptions are in [`docs/`](docs/).
 
----
+## KPI definitions
 
-## 7. Analysis Performed
+| KPI | Definition |
+|---|---|
+| Target | Sum of the budget column for the business type (New, Cross-sell, Renewal) |
+| Placed | Brokerage amount + fees amount for the business type |
+| Invoiced | Invoice amount for the business type |
+| Placed % / Invoiced % | Placed (or invoiced) divided by target |
+| Open opportunities | Stage is *Qualify Opportunity* or *Propose Solution* |
+| Stage funnel | Sum of revenue amount by opportunity stage |
+| Meetings | Count of meetings by account executive and by year |
+| Invoices | Count of invoices by account executive |
 
-### Sales Performance
-- Target vs Achievement
-- Invoice analysis
-- Business segment performance
+## Approach
 
-### Sales Activity
-- Meetings by Account Executive
-- Invoices by Account Executive
-- Yearly meeting activity
+1. Loaded the six Excel files into MySQL.
+2. Wrote SQL for each KPI. Brokerage and fees were combined with `UNION ALL`, so equal amounts are not collapsed into one row.
+3. Converted text-formatted meeting dates with `STR_TO_DATE` so meetings could be grouped by year.
+4. Built the dashboard in Excel (PivotTables, slicers) and in Tableau.
+5. Reconciled the SQL totals against the Excel dashboard.
 
-### Opportunity Analysis
-- Total opportunities
-- Open opportunities
-- Top opportunities by revenue
-- Revenue by opportunity stage
-- Product group analysis
+Example, placed amount for cross-sell:
 
----
+```sql
+SELECT SUM(amount) AS achieved_cross_sell
+FROM (
+    SELECT amount FROM brokerage WHERE income_class = 'cross sell'
+    UNION ALL
+    SELECT amount FROM fees      WHERE income_class = 'cross sell'
+) AS combined_data;
+```
 
-## 8. Dashboard
+## Results
 
-### Achievement
-Target, achievement and invoice performance.
+| Business type | Target | Placed | Placed % | Invoiced | Invoiced % |
+|---|---|---|---|---|---|
+| Cross-sell | 20.08M | 13.04M | 64.94% | 2.85M | 14.21% |
+| New | 19.67M | 3.53M | 17.95% | 0.57M | 2.90% |
+| Renewal | 12.32M | 18.51M | 150.23% | 8.24M | 66.92% |
 
-### Account Executive Activity
-Meeting and invoice activity by Account Executive.
+- Invoiced revenue is well below placed revenue in every category. New business is furthest from target.
+- 49 opportunities in total, 44 open (42 Qualify, 2 Propose Solution) and 5 in Negotiate.
+- 34 meetings: 3 in 2019 and 31 in 2020.
+- The cause of the placed vs invoiced gap cannot be determined from this data.
 
-### Business Segment Analysis
-New, Renewal and Cross-Sell performance.
+## Validation
 
-### Opportunity Pipeline
-Revenue distribution across opportunity stages.
+SQL results were compared with the Excel dashboard. The first comparison did not match: a filter written as `' renewal'` (with a leading space) was dropping renewal fee records. After correcting it to `'renewal'`, placed and invoiced totals matched for all three business types.
 
-### Open Opportunities
-High-value opportunities requiring potential follow-up.
+## Known limitations
 
----
+- **Tableau workbook:** its figures do not yet match SQL and Excel. The New fees calculation uses the *Cross Sell* filter by mistake, and the tables are related through brokerage in a way that can distort totals. A fix is planned (see below).
+- **Unclassified invoices:** 28 invoices (about 594K) have a blank income class, so they are not counted in any of the three categories.
+- **Conversion ratio** (closed won / total opportunities) is defined in the KPI spec but is not implemented in the dashboards.
+- Achievement percentages are calculated in Excel. The SQL produces target, placed and invoiced amounts.
+- Data is sample data from a single branch.
 
-## 9. Key Observations
+## Planned improvements
 
-- 34 meetings are represented in the displayed dataset.
-- 49 total opportunities and 44 open opportunities are shown.
-- Performance is analyzed separately for New,
-  Renewal and Cross-Sell business.
-- Opportunity revenue is distributed across different
-  sales stages.
+- Correct the Tableau fee calculation and build each measure from its own table, then re-check against SQL.
+- Add achievement percentages and conversion ratio in SQL.
+- Group blank-income-class invoices as "Unclassified".
+- Investigate the placed vs invoiced gap with billing data.
 
----
+## Repository structure
 
-## 10. Business Value
+```
+.
+├── data/        # six source Excel files
+├── sql/         # MySQL queries for each KPI
+├── excel/       # Excel dashboard workbook
+├── tableau/     # Tableau packaged workbook (.twbx)
+├── docs/        # KPI list and column descriptions
+├── images/      # dashboard screenshots
+└── README.md
+```
 
-The dashboard provides a consolidated view of sales
-performance and pipeline activity, helping users monitor
-KPIs and identify opportunities that may require attention.
+## Tools
 
----
+SQL (MySQL), Excel (PivotTables, Slicers), Tableau
 
-## 11. Future Improvements
+## Author
 
-- Automated refresh
-- Opportunity aging
-- Win/loss analysis
-- Conversion rate
-- Account Executive target achievement
-- Date-based trends
-- Detailed drill-down analysis
-
----
-
-## 12. Project Screenshots
-
-![image alt](https://github.com/karthikpallamala574-boop/Insurance-_Analysis_Project/blob/main/INSURENCE%20ANALYSIS%20DASHBOARD.png?raw=true)
-
----
-
-## 13. Conclusion
-
-This project helped me practice converting insurance sales
-data into business-focused analysis and dashboard views.
+**Karthik Pallamala**
+[LinkedIn](https://www.linkedin.com/) | karthikpallamala074@gmail.com
 
